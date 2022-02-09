@@ -17,6 +17,41 @@ local function ivnokeRequest()
           print(result[k])
   end
 end
+
+local function is_empty_line(line)
+local clean_line = line:gsub("^%s+", "")
+return string.len(clean_line) ==0
+end
+
+local function find_configs(lines, current_line)
+  local found_config = false
+  local skip_adding_lines = false
+  local config ={}
+  local size = table.getn(lines)
+  for i = 1, size, 1 do
+    local line = lines[i]
+    if(is_empty_line(line)) then
+      if(found_config) then
+        skip_adding_lines = true
+      else
+        config ={}
+      end
+    else
+      if(not(skip_adding_lines)) then
+        table.insert(config,line)
+        if(line==current_line) then
+          found_config = true
+        end
+      end
+    end
+  end
+  if(found_config) then
+    return config
+  else
+    return {}
+  end
+end
+
 function M.sayHelloWorld()
   print(vim.bo.filetype)
       --  print('Hello world!!')
@@ -28,15 +63,19 @@ function M.sayHelloWorld()
 --  print(i.a)
  -- print(b)
  -- print(c)
-  local lines = vim.api.nvim_buf_get_lines(0,0,vim.api.nvim_buf_line_count(0),1)
-  print(lines);
+  --local lines = vim.api.nvim_buf_get_lines(0,0,vim.api.nvim_buf_line_count(0),1)
+
+local lines = vim.api.nvim_buf_get_lines(0,0,vim.api.nvim_buf_line_count(0),1)
+  local current_line = vim.api.nvim_get_current_line()
+
+  local lines = find_configs(lines,current_line)
   local size = table.getn(lines)
   print(size);
   for l = 1, size, 1 do
- --        print(lines[l])
+         print(lines[l])
   end
-  getCurrentLine()
-  ivnokeRequest()
+  -- getCurrentLine()
+ -- ivnokeRequest()
 end
 
 return M
