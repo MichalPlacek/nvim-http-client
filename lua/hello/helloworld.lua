@@ -18,9 +18,13 @@ local function ivnokeRequest()
   end
 end
 
+local function clean_line(line)
+  return line:gsub("^%s+", "")
+end
+
 local function is_empty_line(line)
-local clean_line = line:gsub("^%s+", "")
-return string.len(clean_line) ==0
+  local clean_line = clean_line(line)
+  return string.len(clean_line) ==0
 end
 
 local function find_configs(lines, current_line)
@@ -52,6 +56,20 @@ local function find_configs(lines, current_line)
   end
 end
 
+local function parse_lines(lines)
+  local result = {}
+  local size = table.getn(lines)
+  for i = 1, size, 1 do
+    local line = lines[i]
+    local lineElements = {}
+    for word in clean_line(line):gmatch("%S+") do table.insert(lineElements, word) end
+    if(table.getn(lineElements) == 1) then
+      result["url"] = lineElements[1]
+    end
+  end
+  return result
+end
+
 function M.sayHelloWorld()
   print(vim.bo.filetype)
       --  print('Hello world!!')
@@ -69,6 +87,9 @@ local lines = vim.api.nvim_buf_get_lines(0,0,vim.api.nvim_buf_line_count(0),1)
   local current_line = vim.api.nvim_get_current_line()
 
   local lines = find_configs(lines,current_line)
+  local request = parse_lines(lines)
+  print("Url:")
+  print(request["url"])
   local size = table.getn(lines)
   print(size);
   for l = 1, size, 1 do
