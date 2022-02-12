@@ -1,20 +1,11 @@
 local M = {}
 
-local function getCurrentLine()
-      local dirtyLine = vim.api.nvim_get_current_line()
-      local cleanLine = dirtyLine:gsub("^%s+", "")
-
-      local lineElements = {}
-      for word in cleanLine:gmatch("%S+") do table.insert(lineElements, word) end
-      print(lineElements)
-end
-
-local function ivnokeRequest()
- local result = vim.fn.systemlist('curl onet.pl')
-
-  -- with small indentation results will look better
-  for k,v in pairs(result) do
-          print(result[k])
+local function invoke_request(request)
+  if request["url"] then
+    local result = vim.fn.systemlist("curl "..request["url"])
+    for k,v in pairs(result) do
+      print(result[k])
+    end
   end
 end
 
@@ -23,8 +14,8 @@ local function clean_line(line)
 end
 
 local function is_empty_line(line)
-  local clean_line = clean_line(line)
-  return string.len(clean_line) ==0
+  local cleaned_line = clean_line(line)
+  return string.len(cleaned_line) ==0
 end
 
 local function find_configs(lines, current_line)
@@ -63,14 +54,15 @@ local function parse_lines(lines)
     local line = lines[i]
     local lineElements = {}
     for word in clean_line(line):gmatch("%S+") do table.insert(lineElements, word) end
-    if(table.getn(lineElements) == 1) then
+    if(table.getn(lineElements) == 1 and string.match(string.lower(lineElements[1]),"^http*")) then
+      local text = lineElements[1]
       result["url"] = lineElements[1]
     end
   end
   return result
 end
 
-function M.sayHelloWorld()
+function M.invoke()
   print(vim.bo.filetype)
       --  print('Hello world!!')
       local i ={};
@@ -90,12 +82,12 @@ local lines = vim.api.nvim_buf_get_lines(0,0,vim.api.nvim_buf_line_count(0),1)
   local request = parse_lines(lines)
   print("Url:")
   print(request["url"])
+  invoke_request(request)
   local size = table.getn(lines)
   print(size);
   for l = 1, size, 1 do
          print(lines[l])
   end
-  -- getCurrentLine()
  -- ivnokeRequest()
 end
 
